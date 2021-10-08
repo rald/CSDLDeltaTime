@@ -20,7 +20,7 @@
 
 #define NUM_SPRITES 100
 
-#define FIXED_TIME_STEP (1.0/30.0)
+#define FIXED_TIME_STEP (1.0/15.0)
 
 
 bool quit = false;
