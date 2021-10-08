@@ -8,7 +8,9 @@
 #include <math.h>
 
 
+#include "graphics.h"
 #include "timer.h"
+#include "sprite.h"
 
 
 
@@ -16,75 +18,25 @@
 #define SCREEN_HEIGHT 480
 #define SCREEN_BPP 32
 
+#define NUM_SPRITES 100
+
 #define FIXED_TIME_STEP (1.0/30.0)
 
 
 bool quit = false;
 SDL_Surface *screen;
 SDL_Event event;
-SDL_Surface *box;
-SDL_Rect boxClip[4];
-int boxNumFrames=4;
-int boxFrame=0;
+SDL_Surface *boxSpriteSheet;
 Timer *timer;
 double dt=0;
 double fps=0;
 double accumulator=0;
 int mousex=0,mousey=0;
 bool mousedown=false;
-int x=(SCREEN_WIDTH-32)/2,y=(SCREEN_HEIGHT-32)/2;
-int xi=0,yi=0;
 bool slowDownKeyDown=false;
 bool speedUpKeyDown=false;
 bool stopKeyDown=false;
-
-
-SDL_Surface *loadImage( char *filename ) {
-
-	//The image that's loaded
-	SDL_Surface *loadedImage = NULL;
-
-	//The optimized image that will be used
-	SDL_Surface *optimizedImage = NULL;
-
-	//Load the image
-	loadedImage = IMG_Load( filename );
-
-	//If the image loaded
-	if( loadedImage != NULL ) {
-		//Create an optimized image
-		optimizedImage = SDL_DisplayFormat( loadedImage );
-
-		//Free the old image
-		SDL_FreeSurface( loadedImage );
-
-		//If the image was optimized just fine
-		if( optimizedImage != NULL ) {
-			//Map the color key
-			Uint32 colorkey = SDL_MapRGB( optimizedImage->format, 0xFF, 0x00, 0xFF );
-
-			//Set all pixels of color R 0xFF, G 0x00, B 0xFF to be transparent
-			SDL_SetColorKey( optimizedImage, SDL_SRCCOLORKEY, colorkey );
-		}
-	}
-
-	//Return the optimized image
-	return optimizedImage;
-}
-
-
-
-void applySurface( int x, int y, SDL_Surface *source, SDL_Surface *destination, SDL_Rect *clip ) {
-    //Holds offsets
-    SDL_Rect offset;
-
-    //Get offsets
-    offset.x = x;
-    offset.y = y;
-
-    //Blit
-    SDL_BlitSurface( source, clip, destination, &offset );
-}
+Sprite *sprite[NUM_SPRITES];
 
 
 double getDeltaTime(double *fps,double timerInSeconds) {
@@ -109,16 +61,18 @@ double getDeltaTime(double *fps,double timerInSeconds) {
 
 void update() {
 
-	boxFrame=(boxFrame+1) % boxNumFrames;
+	for(int i=0;i<NUM_SPRITES;i++) {
 
-	x+=xi;
-	y+=yi;
+		sprite[i]->currentFrame=(sprite[i]->currentFrame+1)%sprite[i]->numFrames;
 
-	if(x<0) xi=fabs(xi);
-	if(x>SCREEN_WIDTH-32) xi=-fabs(xi);
-	if(y<0) yi=fabs(yi);
-	if(y>SCREEN_HEIGHT-32) yi=-fabs(yi);
+		sprite[i]->x+=sprite[i]->vx;
+		sprite[i]->y+=sprite[i]->vy;
 
+		if(sprite[i]->x<0) sprite[i]->vx=fabs(sprite[i]->vx);
+		if(sprite[i]->x>SCREEN_WIDTH-32) sprite[i]->vx=-fabs(sprite[i]->vx);
+		if(sprite[i]->y<0) sprite[i]->vy=fabs(sprite[i]->vy);
+		if(sprite[i]->y>SCREEN_HEIGHT-32) sprite[i]->vy=-fabs(sprite[i]->vy);
+	}
 }
 
 bool inrect(int x,int y,int rx1,int ry1,int rx2,int ry2) {
@@ -128,9 +82,6 @@ bool inrect(int x,int y,int rx1,int ry1,int rx2,int ry2) {
 int main(int argc,char **argv) {
 
 	srand(time(NULL));
-
-	xi=(rand()%2?1:-1)*5;
-	yi=(rand()%2?1:-1)*5;
 
   //Initialize all SDL subsystems
   if( SDL_Init( SDL_INIT_VIDEO ) == -1 ) {
@@ -145,16 +96,20 @@ int main(int argc,char **argv) {
 		return false;
   }
 
-	rectangleColor(screen,100,100,200,200,0x00FF00FF);
-	circleColor(screen,200,200,50,0x0000FFFF);
+	boxSpriteSheet=Graphics_LoadImage("assets/box.png");
 
-	box=loadImage("box.png");
+	for(int i=0;i<NUM_SPRITES;i++) {
 
-	for(int i=0;i<4;i++) {
-		boxClip[i].x=i*32;
-		boxClip[i].y=0;
-		boxClip[i].w=32;
-		boxClip[i].h=32;
+		int x=rand()%(SCREEN_WIDTH-32);
+		int y=rand()%(SCREEN_HEIGHT-32);
+
+		int vx=(rand()%2?1:-1)*(rand()%10+1);
+		int vy=(rand()%2?1:-1)*(rand()%10+1);
+
+		sprite[i]=Sprite_New(boxSpriteSheet,x,y,32,32,vx,vy);
+
+		sprite[i]->currentFrame=rand()%sprite[i]->numFrames;
+
 	}
 
 	timer=Timer_New();
@@ -203,7 +158,9 @@ int main(int argc,char **argv) {
     //Fill the screen black
     SDL_FillRect( screen, &screen->clip_rect, SDL_MapRGB( screen->format, 0x00, 0x00, 0x00 ) );
 
-		applySurface(x,y,box,screen,&boxClip[boxFrame]);
+		for(int i=0;i<NUM_SPRITES;i++) {
+			Sprite_Draw(screen,sprite[i]);
+		}
 
 		rectangleColor(screen,10,10,40,40,0xFFFFFFFF);
 		rectangleColor(screen,50,10,80,40,0xFFFFFFFF);
