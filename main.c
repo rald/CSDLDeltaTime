@@ -34,6 +34,10 @@ int mousex=0,mousey=0;
 bool mousedown=false;
 int x=(SCREEN_WIDTH-32)/2,y=(SCREEN_HEIGHT-32)/2;
 int xi=0,yi=0;
+bool slowDownKeyDown=false;
+bool speedUpKeyDown=false;
+bool stopKeyDown=false;
+
 
 SDL_Surface *loadImage( char *filename ) {
 
@@ -179,6 +183,20 @@ int main(int argc,char **argv) {
 				case SDL_MOUSEBUTTONUP:
 					mousedown=false;
 					break;
+				case SDL_KEYDOWN:
+					switch(event.key.keysym.sym) {
+						case SDLK_1: slowDownKeyDown=true; break;
+						case SDLK_2: speedUpKeyDown=true; break;
+						case SDLK_3: stopKeyDown=true; break;
+					}
+					break;
+				case SDL_KEYUP:
+					switch(event.key.keysym.sym) {
+						case SDLK_1: slowDownKeyDown=false; break;
+						case SDLK_2: speedUpKeyDown=false; break;
+						case SDLK_3: stopKeyDown=false; break;
+					}
+					break;
 			}
 		}
 
@@ -200,6 +218,12 @@ int main(int argc,char **argv) {
 			if(inrect(mousex,mousey,90,10,120,40)) { dt=0; boxColor(screen,90,10,120,40,0xFFFFFFFF); }
 
 		}
+
+		if(slowDownKeyDown) { dt/=2; boxColor(screen,10,10,40,40,0xFFFFFFFF); }
+
+		if(speedUpKeyDown) { dt*=2; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
+
+		if(stopKeyDown) { dt=0; boxColor(screen,90,10,120,40,0xFFFFFFFF); }
 
 		if(dt>FIXED_TIME_STEP) dt=FIXED_TIME_STEP;
 
