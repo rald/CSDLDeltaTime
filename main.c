@@ -28,6 +28,7 @@ SDL_Surface *screen;
 SDL_Event event;
 SDL_Surface *boxSpriteSheet;
 SDL_Surface *fontSpriteSheet;
+SDL_Surface *icon;
 Timer *timer;
 double dt=0;
 double fps=0;
@@ -96,6 +97,12 @@ int main(int argc,char **argv) {
   if( screen == NULL ) {
 		return false;
   }
+
+	SDL_WM_SetCaption("CSDLDeltaTime",NULL);
+
+	icon=Graphics_LoadImage("assets/icon.png");
+
+	SDL_WM_SetIcon(icon,NULL);
 
 	boxSpriteSheet=Graphics_LoadImage("assets/box.png");
 
