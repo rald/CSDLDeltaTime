@@ -8,25 +8,26 @@
 #include <math.h>
 
 
+#include "common.h"
 #include "graphics.h"
 #include "timer.h"
 #include "sprite.h"
+#include "font.h"
 
 
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
 #define SCREEN_BPP 32
 
 #define NUM_SPRITES 100
 
-#define FIXED_TIME_STEP (1.0/15.0)
+#define FIXED_TIME_STEP (1.0/30.0)
 
 
 bool quit = false;
 SDL_Surface *screen;
 SDL_Event event;
 SDL_Surface *boxSpriteSheet;
+SDL_Surface *fontSpriteSheet;
 Timer *timer;
 double dt=0;
 double fps=0;
@@ -37,7 +38,7 @@ bool slowDownKeyDown=false;
 bool speedUpKeyDown=false;
 bool stopKeyDown=false;
 Sprite *sprite[NUM_SPRITES];
-
+Font *font;
 
 double getDeltaTime(double *fps,double timerInSeconds) {
 	static double framesPerSecond=0;
@@ -60,18 +61,18 @@ double getDeltaTime(double *fps,double timerInSeconds) {
 
 
 void update() {
-
 	for(int i=0;i<NUM_SPRITES;i++) {
+		if(sprite[i]->animate) {
+			Sprite_Update(sprite[i]);
 
-		sprite[i]->currentFrame=(sprite[i]->currentFrame+1)%sprite[i]->numFrames;
+			sprite[i]->x+=sprite[i]->vx;
+			sprite[i]->y+=sprite[i]->vy;
 
-		sprite[i]->x+=sprite[i]->vx;
-		sprite[i]->y+=sprite[i]->vy;
-
-		if(sprite[i]->x<0) sprite[i]->vx=fabs(sprite[i]->vx);
-		if(sprite[i]->x>SCREEN_WIDTH-32) sprite[i]->vx=-fabs(sprite[i]->vx);
-		if(sprite[i]->y<0) sprite[i]->vy=fabs(sprite[i]->vy);
-		if(sprite[i]->y>SCREEN_HEIGHT-32) sprite[i]->vy=-fabs(sprite[i]->vy);
+			if(sprite[i]->x<0) sprite[i]->vx=fabs(sprite[i]->vx);
+			if(sprite[i]->x>SCREEN_WIDTH-32) sprite[i]->vx=-fabs(sprite[i]->vx);
+			if(sprite[i]->y<0) sprite[i]->vy=fabs(sprite[i]->vy);
+			if(sprite[i]->y>SCREEN_HEIGHT-32) sprite[i]->vy=-fabs(sprite[i]->vy);
+		}
 	}
 }
 
@@ -98,6 +99,10 @@ int main(int argc,char **argv) {
 
 	boxSpriteSheet=Graphics_LoadImage("assets/box.png");
 
+	fontSpriteSheet=Graphics_LoadImage("assets/font.png");
+
+	font=Font_New(fontSpriteSheet,32,32);
+
 	for(int i=0;i<NUM_SPRITES;i++) {
 
 		int x=rand()%(SCREEN_WIDTH-32);
@@ -106,7 +111,7 @@ int main(int argc,char **argv) {
 		int vx=(rand()%2?1:-1)*(rand()%10+1);
 		int vy=(rand()%2?1:-1)*(rand()%10+1);
 
-		sprite[i]=Sprite_New(boxSpriteSheet,x,y,32,32,vx,vy);
+		sprite[i]=Sprite_New(boxSpriteSheet,x,y,32,32,vx,vy,true);
 
 		sprite[i]->currentFrame=rand()%sprite[i]->numFrames;
 
@@ -119,6 +124,7 @@ int main(int argc,char **argv) {
 	while( !quit ) {
 
 		dt=getDeltaTime(&fps,Timer_GetTicks(timer)/1000.0);
+
 
 		//While there's event to handle
 		while( SDL_PollEvent( &event ) ) {
@@ -181,6 +187,9 @@ int main(int argc,char **argv) {
 		if(speedUpKeyDown) { dt*=2; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
 
 		if(stopKeyDown) { dt=0; boxColor(screen,90,10,120,40,0xFFFFFFFF); }
+
+		Font_Print(screen,font,256,16,"%s","Hello World");
+
 
 		if(dt>FIXED_TIME_STEP) dt=FIXED_TIME_STEP;
 

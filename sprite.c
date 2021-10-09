@@ -1,6 +1,6 @@
 #include "sprite.h"
 
-Sprite *Sprite_New(SDL_Surface *image,int x,int y,int w,int h,int vx,int vy) {
+Sprite *Sprite_New(SDL_Surface *image,int x,int y,int w,int h,int vx,int vy,bool animate) {
 	Sprite *sprite=malloc(sizeof(*sprite));
 
 	if(sprite) {
@@ -20,6 +20,7 @@ Sprite *Sprite_New(SDL_Surface *image,int x,int y,int w,int h,int vx,int vy) {
 			sprite->clips[i].w=w;
 			sprite->clips[i].h=h;
 		}
+		sprite->animate=animate;
 	}
 
 	return sprite;
@@ -27,4 +28,10 @@ Sprite *Sprite_New(SDL_Surface *image,int x,int y,int w,int h,int vx,int vy) {
 
 void Sprite_Draw(SDL_Surface *surface,Sprite *sprite) {
 	Graphics_ApplySurface(sprite->x,sprite->y,sprite->image,surface,&sprite->clips[sprite->currentFrame]);
+}
+
+void Sprite_Update(Sprite *sprite) {
+	if(sprite->animate) {
+		sprite->currentFrame=(sprite->currentFrame+1)%sprite->numFrames;
+	}
 }
