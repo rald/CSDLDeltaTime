@@ -181,17 +181,17 @@ int main(int argc,char **argv) {
 
 		if(mousedown) {
 
-			if(inrect(mousex,mousey,10,10,40,40)) { dt/=2; boxColor(screen,10,10,40,40,0xFFFFFFFF); }
+			if(inrect(mousex,mousey,10,10,40,40)) { dt/=4; boxColor(screen,10,10,40,40,0xFFFFFFFF); }
 
-			if(inrect(mousex,mousey,50,10,80,40)) { dt*=2; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
+			if(inrect(mousex,mousey,50,10,80,40)) { dt*=4; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
 
 			if(inrect(mousex,mousey,90,10,120,40)) { dt=0; boxColor(screen,90,10,120,40,0xFFFFFFFF); }
 
 		}
 
-		if(slowDownKeyDown) { dt/=2; boxColor(screen,10,10,40,40,0xFFFFFFFF); }
+		if(slowDownKeyDown) { dt/=4; boxColor(screen,10,10,40,40,0xFFFFFFFF); }
 
-		if(speedUpKeyDown) { dt*=2; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
+		if(speedUpKeyDown) { dt*=4; boxColor(screen,50,10,80,40,0xFFFFFFFF); }
 
 		if(stopKeyDown) { dt=0; boxColor(screen,90,10,120,40,0xFFFFFFFF); }
 
